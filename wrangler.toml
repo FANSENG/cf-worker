@@ -4,6 +4,10 @@ main = "src/index.ts"
 compatibility_date = "2023-05-18"
 compatibility_flags = ["nodejs_compat"]
 
+[vars]
+APIKEY = "apikey"
+BaseURI = "https://open.bigmodel.cn/api/paas/v4/"
+
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/
 # Configuration: https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs
