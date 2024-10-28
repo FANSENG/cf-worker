@@ -8,4 +8,9 @@ const InvalidRequestStatus: Status = {
 	code: 400,
 };
 
-export { InvalidRequestStatus };
+const FailedGenerateStoryStatus: Status = {
+	message: 'Failed to generate story',
+	code: 500,
+};
+
+export { InvalidRequestStatus, FailedGenerateStoryStatus };
