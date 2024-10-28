@@ -13,7 +13,7 @@ function buildRequest(c: Context): Word2StoryRequest {
 }
 
 async function Word2StoryAPI(c: Context): Promise<Response> {
-	if (validateRequest(c)) return c.json(InvalidRequestStatus);
+	if (!validateRequest(c)) return c.json(InvalidRequestStatus);
 	const resp = await Word2Story(buildRequest(c), c.env as Env, c.executionCtx);
 	return c.json(resp);
 }
