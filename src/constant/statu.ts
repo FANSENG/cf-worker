@@ -4,7 +4,7 @@ interface Status {
 }
 
 const InvalidRequestStatus: Status = {
-	message: 'Invalid request: "words" field is missing',
+	message: 'Invalid request',
 	code: 400,
 };
 
