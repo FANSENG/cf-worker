@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [vars]
 APIKEY = "apikey"
-BaseURI = "https://open.bigmodel.cn/api/paas/v4/"
+BaseURL = "https://open.bigmodel.cn/api/paas/v4/"
 
 # Workers Logs
 # Docs: https://developers.cloudflare.com/workers/observability/logs/workers-logs/

@@ -2,5 +2,5 @@
 
 interface Env {
 	APIKEY: 'apikey';
-	BaseURI: 'https://open.bigmodel.cn/api/paas/v4/';
+	BaseURL: 'https://open.bigmodel.cn/api/paas/v4/';
 }

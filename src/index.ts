@@ -1,10 +1,8 @@
 import { Hono } from 'hono';
-import { Word2StoryRequest, Word2StoryResponse } from './shared/word2story';
-import { InvalidRequestStatus } from './constant/statu';
-import { WordToStory } from './bridge/word2story';
-import { word2story } from './api/word2story';
+import { Word2StoryAPI } from './api/word2story';
 
 const app = new Hono();
-app.get('/call/word2story', word2story);
+
+app.get('/word2story', Word2StoryAPI);
 
 export default app;

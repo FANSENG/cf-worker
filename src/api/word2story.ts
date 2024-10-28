@@ -1,13 +1,21 @@
 import { Context } from 'hono';
 import { Word2StoryRequest, Word2StoryResponse } from '../shared/word2story';
 import { InvalidRequestStatus } from '../constant/statu';
-import { WordToStory } from '../bridge/word2story';
+import { Word2Story } from '../method/word2story';
 
-async function word2story(c: Context): Promise<Response> {
-	if (!c.req.query('words')) return c.json(InvalidRequestStatus);
-	const req: Word2StoryRequest = JSON.parse(c.req.query('words') as string);
-	const resp = await WordToStory(req, c.env as Env, c.executionCtx);
+function validateRequest(c: Context): boolean {
+	if (!c.req.query('words') || c.req.query('words')?.length === 0) return false;
+	return true;
+}
+
+function buildRequest(c: Context): Word2StoryRequest {
+	return JSON.parse(c.req.query('words') as string);
+}
+
+async function Word2StoryAPI(c: Context): Promise<Response> {
+	if (validateRequest(c)) return c.json(InvalidRequestStatus);
+	const resp = await Word2Story(buildRequest(c), c.env as Env, c.executionCtx);
 	return c.json(resp);
 }
 
-export { word2story };
+export { Word2StoryAPI };
