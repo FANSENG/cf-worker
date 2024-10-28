@@ -6,7 +6,6 @@ async function WordToStory(req: Word2StoryRequest, env: Env, ctx: ExecutionConte
 		const completion = await new OpenAI({
 			baseURL: `${env.BaseURI}`,
 			apiKey: `${env.APIKEY}`,
-			dangerouslyAllowBrowser: true,
 		}).chat.completions.create({
 			model: 'GLM-4-Flash',
 			messages: [
@@ -32,7 +31,6 @@ async function WordToStory(req: Word2StoryRequest, env: Env, ctx: ExecutionConte
 			max_tokens: 3000,
 			temperature: 0.5,
 		});
-
 		const content = completion.choices[0].message.content as string;
 		const resp: Word2StoryResponse = JSON.parse(content);
 		return resp;

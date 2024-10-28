@@ -5,8 +5,9 @@ import { WordToStory } from '../bridge/word2story';
 
 async function word2story(c: Context): Promise<Response> {
 	if (!c.req.query('words')) return c.json(InvalidRequestStatus);
-	const req: Word2StoryRequest = JSON.parse(c.req.param('words') as string);
-	return c.json(WordToStory(req, c.env as Env, c.executionCtx));
+	const req: Word2StoryRequest = JSON.parse(c.req.query('words') as string);
+	const resp = await WordToStory(req, c.env as Env, c.executionCtx);
+	return c.json(resp);
 }
 
 export { word2story };
