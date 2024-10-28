@@ -1,13 +1,7 @@
 import { OpenAI } from 'openai';
+import { Word2StoryRequest, Word2StoryResponse } from '../shared/word2story';
 
-type StoryStruct = {
-	title: string;
-	story: string;
-	titleZH: string;
-	storyZH: string;
-};
-
-async function WordToStory(wordList: string[], env: Env, ctx: ExecutionContext): Promise<StoryStruct> {
+async function WordToStory(req: Word2StoryRequest, env: Env, ctx: ExecutionContext): Promise<Word2StoryResponse> {
 	try {
 		const completion = await new OpenAI({
 			baseURL: `${env.BaseURI}`,
@@ -20,7 +14,7 @@ async function WordToStory(wordList: string[], env: Env, ctx: ExecutionContext):
 					role: 'user',
 					content: `
                 Given a list of up to 10 words, ${JSON.stringify(
-									wordList
+									req.words
 								)}, generate a short English story(100words) that incorporates all the words. The output should be in JSON format with two key-value pairs: "title", "story", "titleZH" and "storyZH". The title should be a brief, engaging title for the story, and the story should be a coherent, creative narrative that uses all the provided words.
 
                 Please return the JSON directly without any additional text or Markdown formatting.
@@ -40,9 +34,7 @@ async function WordToStory(wordList: string[], env: Env, ctx: ExecutionContext):
 		});
 
 		const content = completion.choices[0].message.content as string;
-		console.log(content);
-		const resp: StoryStruct = JSON.parse(content);
-
+		const resp: Word2StoryResponse = JSON.parse(content);
 		return resp;
 	} catch (error) {
 		console.error(error);
