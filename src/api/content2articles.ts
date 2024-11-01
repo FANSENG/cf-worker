@@ -31,14 +31,9 @@ async function Content2ArticlesAPI(c: Context): Promise<Response> {
 		const response: ContentAnalysisResponse = {
 			articles: articles,
 		};
-
-		console.log('request', request);
-		console.log('response', response);
-
 		return c.json(response);
 	} catch (error) {
-		console.log('error');
-		console.log(error);
+		console.error(error);
 		return c.json(FailedSearchStatus);
 	}
 }
