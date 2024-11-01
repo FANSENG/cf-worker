@@ -1,3 +1,8 @@
+const FailedSearchStatus: Status = {
+	message: 'Failed to search articles',
+	code: 500,
+};
+
 interface Status {
 	code: number;
 	message: string;
@@ -13,4 +18,4 @@ const FailedGenerateStoryStatus: Status = {
 	code: 500,
 };
 
-export { InvalidRequestStatus, FailedGenerateStoryStatus };
+export { InvalidRequestStatus, FailedGenerateStoryStatus, FailedSearchStatus };

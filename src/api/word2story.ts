@@ -1,6 +1,6 @@
 import { Context } from 'hono';
-import { Word2StoryRequest, Word2StoryResponse } from '../shared/word2story';
-import { InvalidRequestStatus, FailedGenerateStoryStatus } from '../constant/statu';
+import { Word2StoryRequest } from '../shared/word2story';
+import { InvalidRequestStatus, FailedGenerateStoryStatus } from '../constant/status';
 import { Word2Story } from '../method/word2story';
 
 function validateRequest(c: Context): boolean {
