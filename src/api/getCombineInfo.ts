@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { getPreSignedDownloadUrl } from '../bridge/image';
 
 interface Menu {
   id: number;
@@ -22,11 +23,14 @@ interface CombineInfoResponse {
   dishes: Dish[];
 }
 
+
+const exampleImageUrl = await getPreSignedDownloadUrl('Snipaste_2025-05-09_15-45-43.png') ?? '';
+
 const mockData: CombineInfoResponse = {
-  menu: {
+    menu: {
     id: 1,
     name: '测试菜单',
-    image: 'https://example.com/menu.jpg'
+    image: exampleImageUrl,
   },
   categories: [
     { name: '主食' },
@@ -35,9 +39,9 @@ const mockData: CombineInfoResponse = {
     { name: '其他' }
   ],
   dishes: [
-    { name: '红烧肉', image: 'https://example.com/meat.jpg', categoryName: '主食' },
-    { name: '番茄蛋汤', image: 'https://example.com/soup.jpg', categoryName: '汤类' },
-    { name: '提拉米苏', image: 'https://example.com/dessert.jpg', categoryName: '甜点' }
+    { name: '红烧肉', image: exampleImageUrl, categoryName: '主食' },
+    { name: '番茄蛋汤', image: exampleImageUrl, categoryName: '汤类' },
+    { name: '提拉米苏', image: exampleImageUrl, categoryName: '甜点' }
   ]
 };
 
