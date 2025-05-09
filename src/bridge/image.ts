@@ -2,8 +2,8 @@
 import { TosClient, TosClientError, TosServerError } from '@volcengine/tos-sdk';
 
 // 从环境变量中获取配置，请确保在您的环境中设置了这些变量
-const TOS_ACCESS_KEY = process.env.TOS_ACCESS_KEY || '';
-const TOS_SECRET_KEY = process.env.TOS_SECRET_KEY || '';
+// const TOS_ACCESS_KEY = '';
+// const TOS_SECRET_KEY = '';
 const TOS_REGION = 'cn-beijing'; // 例如 'cn-beijing'
 const TOS_ENDPOINT = 'tos-cn-beijing.volces.com'
 const TOS_BUCKET_NAME = 'menus'
