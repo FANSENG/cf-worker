@@ -2,19 +2,23 @@
 import { TosClient, TosClientError, TosServerError } from '@volcengine/tos-sdk';
 
 // 从环境变量中获取配置，请确保在您的环境中设置了这些变量
-const TOS_ACCESS_KEY = '';
-const TOS_SECRET_KEY = '';
 const TOS_REGION = 'cn-beijing'; // 例如 'cn-beijing'
 const TOS_ENDPOINT = 'tos-cn-beijing.volces.com'
 const TOS_BUCKET_NAME = 'menus'
 
-// 创建客户端
-const client = new TosClient({
-  accessKeyId: TOS_ACCESS_KEY,
-  accessKeySecret: TOS_SECRET_KEY,
-  region: TOS_REGION,
-  endpoint: TOS_ENDPOINT,
-});
+let client: TosClient | null = null;
+
+function initializeTosClient(env: Env) {
+  if (!client) {
+    client = new TosClient({
+      accessKeyId: env.TOS_ACCESS_KEY,
+      accessKeySecret: env.TOS_SECRET_KEY,
+      region: TOS_REGION,
+      endpoint: TOS_ENDPOINT,
+    });
+  }
+  return client;
+}
 
 /**
  * 处理TOS SDK相关的错误
@@ -43,14 +47,14 @@ function handleError(error: any) {
  * @returns 返回预签名的下载URL字符串
  * @throws 如果配置缺失或生成URL失败，则抛出错误
  */
-export async function getPreSignedDownloadUrl(imagePath: string): Promise<string> {
-  if (!TOS_ACCESS_KEY || !TOS_SECRET_KEY || !TOS_REGION || !TOS_ENDPOINT || !TOS_BUCKET_NAME) {
+export async function getPreSignedDownloadUrl(env: Env, imagePath: string): Promise<string> {
+  if (!TOS_REGION || !TOS_ENDPOINT || !TOS_BUCKET_NAME) {
     console.error('Missing TOS configuration in environment variables.');
     throw new Error('TOS configuration is incomplete. Please check environment variables: TOS_ACCESS_KEY, TOS_SECRET_KEY, TOS_REGION, TOS_ENDPOINT, TOS_BUCKET_NAME.');
   }
 
   try {
-    const url = client.getPreSignedUrl({
+    const url = initializeTosClient(env).getPreSignedUrl({
       method: 'GET', // 指定操作为下载
       bucket: TOS_BUCKET_NAME,
       key: imagePath,
