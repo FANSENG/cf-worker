@@ -18,7 +18,7 @@
 	},
 	"dependencies": {
 		"cheerio": "^1.0.0",
-		"hono": "^4.6.7",
+		"hono": "^4.7.9",
 		"openai": "^4.68.4"
 	}
 }
