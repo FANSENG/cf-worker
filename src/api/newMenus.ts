@@ -1,22 +1,7 @@
 import { Context } from 'hono';
 import { createMenu } from '../store/menus';
+import {uploadImageToStorage} from '../bridge/image'
 
-/**
- * 模拟图片上传到对象存储的函数
- * @param imageData 图片数据
- * @returns 上传后的图片路径
- */
-async function uploadImageToStorage(imageData: string): Promise<string> {
-  // 这里只是模拟上传过程，返回一个假的图片路径
-  // 实际实现时，这里应该调用对象存储的API进行上传
-  const timestamp = new Date().getTime();
-  const imagePath = `https://storage.example.com/images/${timestamp}.jpg`;
-  
-  // 模拟异步上传过程
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  return imagePath;
-}
 
 /**
  * 创建新菜单的API处理函数
@@ -33,7 +18,7 @@ export async function NewMenusAPI(c: Context): Promise<Response> {
     }
     
     // 上传图片到存储，获取图片路径
-    const imagePath = await uploadImageToStorage(image);
+    const imagePath = await uploadImageToStorage(c.env, image);
     
     // 构造菜单信息
     const menusInfo = {

@@ -29,7 +29,7 @@ async function GetCombineInfoAPI(c: Context): Promise<Response> {
 
   // You can use the 'id' variable here to fetch specific data in the future.
   // For now, we'll just log it and return the same mockData.
-  console.log('Received ID:', id);
+  // console.log('Received ID:', id);
 
   // Mock data
   const exampleImageUrl = await getPreSignedDownloadUrl(c.env,'Snipaste_2025-05-09_15-45-43.png') ?? '';
