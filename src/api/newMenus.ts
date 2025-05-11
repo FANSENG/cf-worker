@@ -11,6 +11,11 @@ export async function NewMenusAPI(c: Context): Promise<Response> {
   try {
     // 获取请求参数
     const { id, name, image } = await c.req.json();
+
+    return c.json({
+      success: true,
+      message: c.req.json() + 'id:' + id + 'name:' + name + 'image:' + image + '',
+    })
     
     // 参数验证
     if (!id || !name || !image) {
