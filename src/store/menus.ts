@@ -61,7 +61,7 @@ export async function createMenu(env: Env, id: number, menusInfo: MenusInfo): Pr
     const escapedCategoriesStr = categoriesStr.replace(/'/g, "''");
     const escapedDishesStr = dishesStr.replace(/'/g, "''");
 
-    const sql = `INSERT INTO '${tableName}' (id, menusInfo, categories, dishes) VALUES (${id}, '${escapedMenusInfoStr}', '${escapedCategoriesStr}', '${escapedDishesStr}')`;
+    const sql = `INSERT INTO '${tableName}' (id, menus_info, categories, dishes) VALUES (${id}, '${escapedMenusInfoStr}', '${escapedCategoriesStr}', '${escapedDishesStr}')`;
 
     return await executeSQL(env, sql);
 }
