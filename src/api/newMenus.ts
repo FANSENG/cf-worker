@@ -1,0 +1,63 @@
+import { Context } from 'hono';
+import { createMenu } from '../store/menus';
+
+/**
+ * 模拟图片上传到对象存储的函数
+ * @param imageData 图片数据
+ * @returns 上传后的图片路径
+ */
+async function uploadImageToStorage(imageData: string): Promise<string> {
+  // 这里只是模拟上传过程，返回一个假的图片路径
+  // 实际实现时，这里应该调用对象存储的API进行上传
+  const timestamp = new Date().getTime();
+  const imagePath = `https://storage.example.com/images/${timestamp}.jpg`;
+  
+  // 模拟异步上传过程
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  return imagePath;
+}
+
+/**
+ * 创建新菜单的API处理函数
+ * @param c Hono上下文
+ */
+export async function NewMenusAPI(c: Context): Promise<Response> {
+  try {
+    // 获取请求参数
+    const { id, name, image } = await c.req.json();
+    
+    // 参数验证
+    if (!id || !name || !image) {
+      return c.json({ success: false, message: '缺少必要参数：id、name或image' }, 400);
+    }
+    
+    // 上传图片到存储，获取图片路径
+    const imagePath = await uploadImageToStorage(image);
+    
+    // 构造菜单信息
+    const menusInfo = {
+      name,
+      image: imagePath
+    };
+    
+    // 调用createMenu函数创建菜单
+    const result = await createMenu(c.env, id, menusInfo);
+    
+    // 返回成功响应
+    return c.json({
+      success: true,
+      message: '菜单创建成功',
+      data: {
+        id,
+        menusInfo
+      }
+    });
+  } catch (error) {
+    console.error('创建菜单失败:', error);
+    return c.json({
+      success: false,
+      message: '创建菜单失败: ' + (error instanceof Error ? error.message : String(error))
+    }, 500);
+  }
+}
