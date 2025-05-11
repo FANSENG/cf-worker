@@ -87,8 +87,15 @@ export async function uploadImageToStorage(env: Env, imageData: string): Promise
   // 移除Base64前缀（如果有）
   const base64Data = imageData.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, '');
   
-  // 将Base64转换为Buffer
-  const buffer = Buffer.from(base64Data, 'base64');
+  // 将Base64转换为Uint8Array (Cloudflare Workers环境中不支持Buffer)
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  
+  // 将Uint8Array转换为Blob对象，Blob是SupportObjectBody支持的类型
+  const blob = new Blob([bytes], { type: 'image/png' });
   
   // 生成文件名，如果没有提供则使用时间戳
   const timestamp = new Date().getTime().toString();
@@ -99,7 +106,7 @@ export async function uploadImageToStorage(env: Env, imageData: string): Promise
     const result = await initializeTosClient(env).putObject({
       bucket: TOS_BUCKET_NAME,
       key: imagePath,
-      body: buffer,
+      body: blob,
       // 可选：设置Content-Type
       contentType: 'image/png',
       // 可选：设置元数据
