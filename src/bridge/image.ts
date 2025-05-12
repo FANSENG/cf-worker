@@ -1,5 +1,7 @@
 // 导入 SDK, 当 TOS Node.JS SDK 版本小于 2.5.2 请把下方 TosClient 改成 TOS 导入
 import { TosClient, TosClientError, TosServerError } from '@volcengine/tos-sdk';
+// 导入Buffer类型，确保在Cloudflare Workers环境中可用
+import { Buffer } from 'buffer';
 
 // 从环境变量中获取配置，请确保在您的环境中设置了这些变量
 const TOS_REGION = 'cn-beijing'; // 例如 'cn-beijing'
@@ -78,46 +80,76 @@ export async function getPreSignedDownloadUrl(env: Env, imagePath: string): Prom
  * @returns 上传后的图片路径/Key
  * @throws 如果配置缺失或上传失败，则抛出错误
  */
-export async function uploadImageToStorage(env: Env, imageData: string): Promise<string> {
+/**
+ * 将Base64编码的图片数据上传到对象存储
+ * @param env 环境变量，包含TOS访问密钥
+ * @param imageData 图片数据, Base64编码
+ * @param fileName 可选的文件名，如果不提供则使用时间戳
+ * @returns 上传后的图片路径/Key
+ * @throws 如果配置缺失或上传失败，则抛出错误
+ */
+export async function uploadImageToStorage(env: Env, imageData: string, fileName?: string): Promise<string> {
   if (!TOS_REGION || !TOS_ENDPOINT || !TOS_BUCKET_NAME) {
     console.error('Missing TOS configuration in environment variables.');
     throw new Error('TOS configuration is incomplete. Please check environment variables: TOS_ACCESS_KEY, TOS_SECRET_KEY, TOS_REGION, TOS_ENDPOINT, TOS_BUCKET_NAME.');
   }
 
-  // 移除Base64前缀（如果有）
-  const base64Data = imageData.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, '');
+  // 检测图片格式并提取相关信息
+  let contentType = 'image/png';
+  let fileExtension = 'png';
   
-  // 将Base64转换为Uint8Array (Cloudflare Workers环境中不支持Buffer)
+  // 从Base64字符串中提取MIME类型（如果有）
+  const mimeMatch = imageData.match(/^data:([\w\/+]+);base64,/);
+  if (mimeMatch && mimeMatch[1]) {
+    contentType = mimeMatch[1];
+    // 从MIME类型中提取文件扩展名
+    const mimeExtMatch = contentType.match(/image\/(\w+)/);
+    if (mimeExtMatch && mimeExtMatch[1]) {
+      fileExtension = mimeExtMatch[1];
+      // 特殊情况处理
+      if (fileExtension === 'jpeg') fileExtension = 'jpg';
+    }
+  }
+
+  // 移除Base64前缀（如果有）
+  const base64Data = imageData.replace(/^data:([\w\/+]+);base64,/, '');
+  
+  // 将Base64转换为Buffer (兼容TOS SDK的SupportObjectBody类型)
   const binaryString = atob(base64Data);
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
-  
-  // 将Uint8Array转换为Blob对象，Blob是SupportObjectBody支持的类型
-  const blob = new Blob([bytes], { type: 'image/png' });
+  // 将Uint8Array转换为Buffer，以符合TOS SDK的类型要求
+  const buffer = Buffer.from(bytes.buffer);
   
   // 生成文件名，如果没有提供则使用时间戳
   const timestamp = new Date().getTime().toString();
-  const imagePath = `image_${timestamp}.png`;
+  const imagePath = fileName || `image_${timestamp}.${fileExtension}`;
   
   try {
-    // 使用TOS SDK上传文件
+    // 使用TOS SDK上传文件，使用Uint8Array而不是ArrayBuffer
+    // 在Cloudflare Workers环境中，需要使用符合SDK要求的类型
     const result = await initializeTosClient(env).putObject({
       bucket: TOS_BUCKET_NAME,
       key: imagePath,
-      body: blob,
-      // 可选：设置Content-Type
-      contentType: 'image/png',
-      // 可选：设置元数据
+      body: buffer,
+      contentType: contentType,
       meta: {
-        'upload-time': timestamp
+        'upload-time': timestamp,
+        'content-type': contentType
       }
     });
     
-    // console.log(`Successfully uploaded image to TOS: ${imagePath}`, result);
+    console.log(`Successfully uploaded image to TOS: ${imagePath}`, result);
     return imagePath;
   } catch (error) {
+    console.error('Error uploading image to TOS:', error);
+    // 提供更详细的错误信息
+    if (error instanceof Error) {
+      console.error('Error details:', error.message);
+      if ('stack' in error) console.error('Stack:', error.stack);
+    }
     handleError(error); // 错误将在这里被捕获并重新抛出
     return ''; // 由于handleError会抛出错误，这里的return实际上不会执行，但为了类型符合性可以保留
   }

@@ -39,7 +39,6 @@ export async function NewMenusAPI(c: Context): Promise<Response> {
       }
     });
   } catch (error) {
-    console.error('创建菜单失败:', error);
     return c.json({
       success: false,
       message: '创建菜单失败: ' + (error instanceof Error ? error.message : String(error))
