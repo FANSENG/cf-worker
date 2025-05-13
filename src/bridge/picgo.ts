@@ -1,5 +1,5 @@
 // 导入必要的依赖
-import { Buffer } from 'node:buffer';
+import axios from 'axios';
 
 /**
  * Chevereto API配置接口
@@ -62,18 +62,6 @@ function handleCheveretoError(response: CheveretoResponse): void {
 function prepareFormData(imageBase64: string): FormData {
   // 如果Base64字符串包含前缀，则移除前缀
   const base64Data = imageBase64.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
-  
-  // 解码Base64数据
-  // const imageBuffer = Buffer.from(base64Data, 'base64');
-  
-  // 从Base64数据中获取文件扩展名
-  // const fileExtension = getFileExtensionFromBase64(imageBase64);
-  
-  // 创建文件对象
-  // const blob = new Blob([imageBuffer], { type: `image/${fileExtension}` });
-  // const fileName = `image_${Date.now()}.${fileExtension}`;
-  // const file = new File([blob], fileName, { type: `image/${fileExtension}` });
-  
   // 创建FormData并添加文件
   const formData = new FormData();
   formData.append('source', base64Data);
@@ -106,18 +94,16 @@ function getFileExtensionFromBase64(base64Data: string): string {
  * @returns API响应
  */
 async function sendUploadRequest(config: CheveretoConfig, formData: FormData): Promise<CheveretoResponse> {
-  const response = await fetch(config.apiEndpoint, {
-    method: 'POST',
+  const params = new URLSearchParams();
+  params.append('source', formData.get('source') as string);
+  const response = await axios.post(config.apiEndpoint, params, {
     headers: {
       'X-API-Key': config.apiKey,
     },
-    body: formData,
   });
 
-  // 解析响应
-  const responseData = await response.json();
-  console.log('Chevereto API响应:', responseData);
-  return responseData as CheveretoResponse;
+  console.log('Chevereto API响应:', response.data);
+  return response.data as CheveretoResponse;
 }
 
 /**
