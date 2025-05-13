@@ -78,62 +78,62 @@ export async function getPreSignedDownloadUrl(env: Env, imagePath: string): Prom
  * @returns 上传后的Key，通过 UUID 生成
  * @throws 如果配置缺失或上传失败，则抛出错误
  */
-export async function uploadImageToStorage(env: Env, imageData: string): Promise<string> {
-  if (!TOS_REGION || !TOS_ENDPOINT || !TOS_BUCKET_NAME) {
-    console.error('Missing TOS configuration in environment variables.');
-    throw new Error('TOS configuration is incomplete. Please check environment variables: TOS_ACCESS_KEY, TOS_SECRET_KEY, TOS_REGION, TOS_ENDPOINT, TOS_BUCKET_NAME.');
-  }
+// export async function uploadImageToStorage(env: Env, imageData: string): Promise<string> {
+//   if (!TOS_REGION || !TOS_ENDPOINT || !TOS_BUCKET_NAME) {
+//     console.error('Missing TOS configuration in environment variables.');
+//     throw new Error('TOS configuration is incomplete. Please check environment variables: TOS_ACCESS_KEY, TOS_SECRET_KEY, TOS_REGION, TOS_ENDPOINT, TOS_BUCKET_NAME.');
+//   }
 
-  // 检查imageData是否为Base64格式
-  if (!imageData || typeof imageData !== 'string') {
-    throw new Error('Invalid image data: Image data must be a non-empty string');
-  }
+//   // 检查imageData是否为Base64格式
+//   if (!imageData || typeof imageData !== 'string') {
+//     throw new Error('Invalid image data: Image data must be a non-empty string');
+//   }
 
-  // 如果Base64字符串包含前缀（如data:image/jpeg;base64,），则移除前缀
-  const base64Data = imageData.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, '');
+//   // 如果Base64字符串包含前缀（如data:image/jpeg;base64,），则移除前缀
+//   const base64Data = imageData.replace(/^data:image\/(png|jpeg|jpg|gif);base64,/, '');
   
-  // 在Cloudflare Workers环境中解码Base64
-  const imageBuffer = Buffer.from(base64Data, 'base64');
+//   // 在Cloudflare Workers环境中解码Base64
+//   const imageBuffer = Buffer.from(base64Data, 'base64');
   
-  // 生成唯一的文件名（使用时间戳和随机字符串）
-  const timestamp = Date.now();
-  const randomString = Math.random().toString(36).substring(2, 10);
-  const fileExtension = getFileExtensionFromBase64(imageData);
-  const key = `images/${timestamp}-${randomString}.${fileExtension}`;
+//   // 生成唯一的文件名（使用时间戳和随机字符串）
+//   const timestamp = Date.now();
+//   const randomString = Math.random().toString(36).substring(2, 10);
+//   const fileExtension = getFileExtensionFromBase64(imageData);
+//   const key = `images/${timestamp}-${randomString}.${fileExtension}`;
   
-  try {
-    // 初始化TOS客户端并上传文件
-    const tosClient = initializeTosClient(env);
+//   try {
+//     // 初始化TOS客户端并上传文件
+//     const tosClient = initializeTosClient(env);
     
-    await tosClient.putObject({
-      bucket: TOS_BUCKET_NAME,
-      key: key,
-      body: imageBuffer,
-      contentType: `image/${fileExtension}`,
-    });
+//     await tosClient.putObject({
+//       bucket: TOS_BUCKET_NAME,
+//       key: key,
+//       body: imageBuffer,
+//       contentType: `image/${fileExtension}`,
+//     });
     
-    console.log(`Successfully uploaded image to ${key}`);
-    return key;
-  } catch (error) {
-    handleError(error);
-    return ''; // 由于handleError会抛出错误，这里的return实际上不会执行
-  }
-}
+//     console.log(`Successfully uploaded image to ${key}`);
+//     return key;
+//   } catch (error) {
+//     handleError(error);
+//     return ''; // 由于handleError会抛出错误，这里的return实际上不会执行
+//   }
+// }
 
-/**
- * 从Base64图片数据中获取文件扩展名
- * @param base64Data Base64编码的图片数据
- * @returns 文件扩展名（不包含点）
- */
-function getFileExtensionFromBase64(base64Data: string): string {
-  // 检查是否包含MIME类型前缀
-  if (base64Data.startsWith('data:image/')) {
-    const mimeType = base64Data.split(';')[0].split(':')[1];
-    // 从MIME类型中提取扩展名
-    const extension = mimeType.split('/')[1];
-    return extension === 'jpeg' ? 'jpg' : extension;
-  }
+// /**
+//  * 从Base64图片数据中获取文件扩展名
+//  * @param base64Data Base64编码的图片数据
+//  * @returns 文件扩展名（不包含点）
+//  */
+// function getFileExtensionFromBase64(base64Data: string): string {
+//   // 检查是否包含MIME类型前缀
+//   if (base64Data.startsWith('data:image/')) {
+//     const mimeType = base64Data.split(';')[0].split(':')[1];
+//     // 从MIME类型中提取扩展名
+//     const extension = mimeType.split('/')[1];
+//     return extension === 'jpeg' ? 'jpg' : extension;
+//   }
   
-  // 如果没有MIME类型前缀，默认返回jpg
-  return 'jpg';
-}
+//   // 如果没有MIME类型前缀，默认返回jpg
+//   return 'jpg';
+// }

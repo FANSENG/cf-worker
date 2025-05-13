@@ -5,6 +5,7 @@ declare namespace Cloudflare {
 	interface Env {
 		APIKEY: "apikey";
 		BaseURL: "https://open.bigmodel.cn/api/paas/v4/";
+        PICGO_API_ENDPOINT: "https://www.picgo.net/api/1/upload";
 		D1_Menus: D1Database;
 
 		/**
@@ -12,6 +13,7 @@ declare namespace Cloudflare {
 		 */
 		TOS_ACCESS_KEY: string;
 		TOS_SECRET_KEY: string;
+        PICGO_KEY: string;
 	}
 }
 interface Env extends Cloudflare.Env {}

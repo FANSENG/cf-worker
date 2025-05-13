@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { createMenu } from '../store/menus';
-import {uploadImageToStorage} from '../bridge/image'
+// import {uploadImageToStorage} from '../bridge/image'
+import {uploadImageToChevereto} from '../bridge/picgo'
 
 
 /**
@@ -18,7 +19,7 @@ export async function NewMenusAPI(c: Context): Promise<Response> {
     }
     
     // 上传图片到存储，获取图片路径
-    const imagePath = await uploadImageToStorage(c.env, image);
+    const imagePath = await uploadImageToChevereto(c.env, image);
     
     // 构造菜单信息
     const menusInfo = {
