@@ -114,14 +114,12 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
   // 移除Base64前缀（如果有）
   const base64Data = imageData.replace(/^data:([\w\/+]+);base64,/, '');
   
-  // 将Base64转换为Buffer (兼容TOS SDK的SupportObjectBody类型)
+  // 将Base64转换为二进制数据
   const binaryString = atob(base64Data);
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
   }
-  // 将Uint8Array转换为Buffer，以符合TOS SDK的类型要求
-  // const buffer = Buffer.from(bytes.buffer);
   const blob = new Blob([bytes], { type: contentType });
   
   // 生成文件名，如果没有提供则使用时间戳
@@ -129,15 +127,134 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
   const imagePath = fileName || `image_${timestamp}.${fileExtension}`;
   
   try {
-    // 使用TOS SDK上传文件，使用Uint8Array而不是ArrayBuffer
-    // 在Cloudflare Workers环境中，需要使用符合SDK要求的类型
-    const result = await initializeTosClient(env).putObject({
-      bucket: TOS_BUCKET_NAME,
-      key: imagePath,
+    // 使用REST API直接调用TOS的PutObject接口
+    const host = `${TOS_BUCKET_NAME}.${TOS_ENDPOINT}`;
+    const url = `https://${host}/${imagePath}`;
+    
+    // 准备请求头
+    const date = new Date().toUTCString();
+    
+    // 创建规范请求用于签名
+    // 火山引擎TOS使用AWS V4签名算法
+    const method = 'PUT';
+    const amzDate = new Date().toISOString().replace(/[:\-]|\..+/g, '').replace('T', '');
+    const dateStamp = amzDate.substring(0, 8);
+    
+    // 创建规范请求
+    const canonicalUri = `/${imagePath}`;
+    const canonicalQueryString = '';
+    const canonicalHeaders = `content-type:${contentType}\nhost:${host}\nx-tos-date:${amzDate}\n`;
+    const signedHeaders = 'content-type;host;x-tos-date';
+    
+    // 创建请求哈希（空字符串哈希）
+    const payloadHash = 'UNSIGNED-PAYLOAD';
+    
+    // 组合规范请求
+    const canonicalRequest = `${method}\n${canonicalUri}\n${canonicalQueryString}\n${canonicalHeaders}\n${signedHeaders}\n${payloadHash}`;
+    
+    // 创建签名字符串
+    const algorithm = 'TOS4-HMAC-SHA256';
+    const credentialScope = `${dateStamp}/${TOS_REGION}/tos/request`;
+    
+    // 使用WebCrypto API计算规范请求的哈希
+    const encoder = new TextEncoder();
+    const canonicalRequestData = encoder.encode(canonicalRequest);
+    const canonicalRequestHash = await crypto.subtle.digest('SHA-256', canonicalRequestData);
+    const canonicalRequestHashHex = Array.from(new Uint8Array(canonicalRequestHash))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    
+    // 创建待签名字符串
+    const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${canonicalRequestHashHex}`;
+    
+    // 计算签名密钥
+    const kDate = await crypto.subtle.sign(
+      'HMAC',
+      await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(env.TOS_SECRET_KEY),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      ),
+      encoder.encode(dateStamp)
+    );
+    
+    const kRegion = await crypto.subtle.sign(
+      'HMAC',
+      await crypto.subtle.importKey(
+        'raw',
+        new Uint8Array(kDate),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      ),
+      encoder.encode(TOS_REGION)
+    );
+    
+    const kService = await crypto.subtle.sign(
+      'HMAC',
+      await crypto.subtle.importKey(
+        'raw',
+        new Uint8Array(kRegion),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      ),
+      encoder.encode('tos')
+    );
+    
+    const kSigning = await crypto.subtle.sign(
+      'HMAC',
+      await crypto.subtle.importKey(
+        'raw',
+        new Uint8Array(kService),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      ),
+      encoder.encode('request')
+    );
+    
+    // 计算最终签名
+    const signature = await crypto.subtle.sign(
+      'HMAC',
+      await crypto.subtle.importKey(
+        'raw',
+        new Uint8Array(kSigning),
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      ),
+      encoder.encode(stringToSign)
+    );
+    
+    // 将签名转换为十六进制字符串
+    const signatureHex = Array.from(new Uint8Array(signature))
+      .map(b => b.toString(16).padStart(2, '0'))
+      .join('');
+    
+    // 构建授权头
+    const authorizationHeader = `${algorithm} Credential=${env.TOS_ACCESS_KEY}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signatureHex}`;
+    
+    // 发送请求
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': contentType,
+        'Host': host,
+        'x-tos-date': amzDate,
+        'Authorization': authorizationHeader
+      },
       body: blob
     });
     
-    console.log(`Successfully uploaded image to TOS: ${imagePath}`, result);
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`TOS API Error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    
+    console.log(`Successfully uploaded image to TOS: ${imagePath}`);
     return imagePath;
   } catch (error) {
     console.error('Error uploading image to TOS:', error);
@@ -146,7 +263,6 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
       console.error('Error details:', error.message);
       if ('stack' in error) console.error('Stack:', error.stack);
     }
-    handleError(error); // 错误将在这里被捕获并重新抛出
-    return ''; // 由于handleError会抛出错误，这里的return实际上不会执行，但为了类型符合性可以保留
+    throw new Error(`Failed to upload image to TOS: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
