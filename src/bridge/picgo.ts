@@ -110,14 +110,14 @@ async function sendUploadRequest(config: CheveretoConfig, formData: FormData): P
     method: 'POST',
     headers: {
       'X-API-Key': config.apiKey,
-      // 不需要手动设置Content-Type，fetch会自动设置正确的boundary
     },
     body: formData,
   });
 
   // 解析响应
-  const responseData = await response.json() as CheveretoResponse;
-  return responseData;
+  const responseData = await response.json();
+  console.log('Chevereto API响应:', responseData);
+  return responseData as CheveretoResponse;
 }
 
 /**
@@ -129,7 +129,7 @@ async function sendUploadRequest(config: CheveretoConfig, formData: FormData): P
  */
 export async function uploadImageToChevereto(env: Env, imageBase64: string): Promise<string> {
   // 检查imageBase64是否为有效的Base64格式
-  if (!imageBase64 || typeof imageBase64 !== 'string') {
+  if (!imageBase64) {
     throw new Error('无效的图像数据：图像数据必须是非空字符串');
   }
 
