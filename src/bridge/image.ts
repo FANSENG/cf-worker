@@ -121,7 +121,8 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
     bytes[i] = binaryString.charCodeAt(i);
   }
   // 将Uint8Array转换为Buffer，以符合TOS SDK的类型要求
-  const buffer = Buffer.from(bytes.buffer);
+  // const buffer = Buffer.from(bytes.buffer);
+  const blob = new Blob([bytes], { type: contentType });
   
   // 生成文件名，如果没有提供则使用时间戳
   const timestamp = new Date().getTime().toString();
@@ -133,7 +134,7 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
     const result = await initializeTosClient(env).putObject({
       bucket: TOS_BUCKET_NAME,
       key: imagePath,
-      body: buffer
+      body: blob
     });
     
     console.log(`Successfully uploaded image to TOS: ${imagePath}`, result);
