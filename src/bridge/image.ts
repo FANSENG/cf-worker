@@ -132,19 +132,21 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
     const url = `https://${host}/${imagePath}`;
     
     // 准备请求头
-    const date = new Date().toUTCString();
+    const date = new Date();
+    const dateUtc = date.toUTCString();
     
     // 创建规范请求用于签名
     // 火山引擎TOS使用AWS V4签名算法
     const method = 'PUT';
-    const amzDate = new Date().toISOString().replace(/[:\-]|\..+/g, '').replace('T', '');
+    const amzDate = date.toISOString().replace(/[:\-]|\..+/g, '').replace('T', '');
     const dateStamp = amzDate.substring(0, 8);
     
     // 创建规范请求
     const canonicalUri = `/${imagePath}`;
     const canonicalQueryString = '';
-    const canonicalHeaders = `content-type:${contentType}\nhost:${host}\nx-tos-date:${amzDate}\n`;
-    const signedHeaders = 'content-type;host;x-tos-date';
+    // 确保日期格式正确，并且包含在规范请求中
+    const canonicalHeaders = `content-type:${contentType}\ndate:${dateUtc}\nhost:${host}\nx-tos-date:${amzDate}\n`;
+    const signedHeaders = 'content-type;date;host;x-tos-date';
     
     // 创建请求哈希（空字符串哈希）
     const payloadHash = 'UNSIGNED-PAYLOAD';
@@ -244,6 +246,7 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
         'Content-Type': contentType,
         'Host': host,
         'x-tos-date': amzDate,
+        'Date': dateUtc, // 使用一致的日期变量
         'Authorization': authorizationHeader
       },
       body: blob
