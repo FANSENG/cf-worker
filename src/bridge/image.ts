@@ -133,12 +133,7 @@ export async function uploadImageToStorage(env: Env, imageData: string, fileName
     const result = await initializeTosClient(env).putObject({
       bucket: TOS_BUCKET_NAME,
       key: imagePath,
-      body: buffer,
-      contentType: contentType,
-      meta: {
-        'upload-time': timestamp,
-        'content-type': contentType
-      }
+      body: buffer
     });
     
     console.log(`Successfully uploaded image to TOS: ${imagePath}`, result);
