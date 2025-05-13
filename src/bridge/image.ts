@@ -1,7 +1,7 @@
 // 导入 SDK, 当 TOS Node.JS SDK 版本小于 2.5.2 请把下方 TosClient 改成 TOS 导入
 import { TosClient, TosClientError, TosServerError } from '@volcengine/tos-sdk';
 // 导入Buffer类型，确保在Cloudflare Workers环境中可用
-import { Buffer } from 'node:buffer';
+// import { Buffer } from 'node:buffer';
 
 // 从环境变量中获取配置，请确保在您的环境中设置了这些变量
 const TOS_REGION = 'cn-beijing'; // 例如 'cn-beijing'
