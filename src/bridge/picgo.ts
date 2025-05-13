@@ -64,19 +64,19 @@ function prepareFormData(imageBase64: string): FormData {
   const base64Data = imageBase64.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
   
   // 解码Base64数据
-  const imageBuffer = Buffer.from(base64Data, 'base64');
+  // const imageBuffer = Buffer.from(base64Data, 'base64');
   
   // 从Base64数据中获取文件扩展名
-  const fileExtension = getFileExtensionFromBase64(imageBase64);
+  // const fileExtension = getFileExtensionFromBase64(imageBase64);
   
   // 创建文件对象
-  const blob = new Blob([imageBuffer], { type: `image/${fileExtension}` });
-  const fileName = `image_${Date.now()}.${fileExtension}`;
-  const file = new File([blob], fileName, { type: `image/${fileExtension}` });
+  // const blob = new Blob([imageBuffer], { type: `image/${fileExtension}` });
+  // const fileName = `image_${Date.now()}.${fileExtension}`;
+  // const file = new File([blob], fileName, { type: `image/${fileExtension}` });
   
   // 创建FormData并添加文件
   const formData = new FormData();
-  formData.append('source', file);
+  formData.append('source', base64Data);
   
   return formData;
 }
