@@ -8,6 +8,7 @@ const app = new Hono();
 
 app.get('/word2story', Word2StoryAPI);
 app.get('/content2articles', Content2ArticlesAPI);
+
 app.get('/menus/combine-info/:id', GetCombineInfoAPI);
 app.post('/menus/create', NewMenusAPI);
 
