@@ -17,9 +17,13 @@
 		"wrangler": "^3.60.3"
 	},
 	"dependencies": {
+		"@aws-sdk/client-s3": "^3.812.0",
+		"@aws-sdk/s3-request-presigner": "^3.812.0",
+		"@types/uuid": "^10.0.0",
 		"@volcengine/tos-sdk": "^2.7.4",
 		"cheerio": "^1.0.0",
 		"hono": "^4.7.9",
-		"openai": "^4.68.4"
+		"openai": "^4.68.4",
+		"uuid": "^11.1.0"
 	}
 }

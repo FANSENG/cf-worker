@@ -8,6 +8,12 @@ declare namespace Cloudflare {
 		PICGO_API_ENDPOINT: "https://www.picgo.net/api/1/upload";
 		R2_Menus: R2Bucket;
 		D1_Menus: D1Database;
+
+        // 手动添加
+        R2_ACCESS_KEY_ID: string;
+        R2_SECRET_ACCESS_KEY: string;
+        R2_ACCOUNT_ID: string;
+        R2_BUCKET_NAME: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
