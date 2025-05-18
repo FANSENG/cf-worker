@@ -7,37 +7,54 @@ import { executeSQL } from '../bridge/d1';
 // 如果 Env 的定义在其他位置，请相应地调整导入路径。
 
 const tableName = 'menus';
+const defaultCategories = ["其他"];
 
-interface MenusInTable {
+export interface MenusInTable {
     id: number;
     menusInfo: string; // 存储为 JSON 字符串
     categories: string; // 存储为 JSON 字符串
     dishes: string; // 存储为 JSON 字符串
 }
 
-interface Menu {
+export interface Menu {
     id: number;
     menusInfo: MenusInfo;
     categories: Category[];
     dishes: Dish[];
 }
 
-interface MenusInfo{
+export interface MenusInfo{
     name: string;
     image: string;
 }
   
-interface Category {
+export interface Category {
     name: string;
 }
 
-interface Dish {
+export interface Dish {
     name: string;
     image: string;
     categoryName: string;
 }
 
-const defaultCategories = ["其他"];
+
+async function getDishes(env: Env, id: number): Promise<Dish[]> {
+    try {
+        const sql = `SELECT dishes FROM '${tableName}' WHERE id = ${id}`;
+        const result = await executeSQL(env, sql);
+        
+        if (!result || !result.results || result.results.length === 0) {
+            return [];
+        }
+        
+        const dishesStr = result.results[0].dishes;
+        return JSON.parse(dishesStr) as Dish[];
+    } catch (error) {
+        console.error('获取菜品失败:', error);
+        throw error;
+    }
+}
 
 export async function createMenu(env: Env, id: number, menusInfo: MenusInfo): Promise<any> {
     const menusInfoStr = JSON.stringify(menusInfo);
@@ -72,4 +89,29 @@ export async function alterCategories(env: Env, id: number, categories: string[]
     const categoriesStr = JSON.stringify(categories);
     const sql = `UPDATE '${tableName}' SET categories = '${categoriesStr}' WHERE id = ${id}`;
     return await executeSQL(env, sql);
+}
+
+export async function addDish(env: Env, id: number, dish: Dish): Promise<any> {
+    try {
+        // 1. 获取当前所有菜品
+        const currentDishes = await getDishes(env, id);
+        
+        // 2. 添加或更新菜品
+        const existingIndex = currentDishes.findIndex(d => d.name === dish.name);
+        if (existingIndex >= 0) {
+            currentDishes[existingIndex] = dish; // 更新已有菜品
+        } else {
+            currentDishes.push(dish); // 添加新菜品
+        }
+        
+        // 3. 保存菜品
+        const dishesStr = JSON.stringify(currentDishes);
+        const escapedDishesStr = dishesStr.replace(/'/g, "''");
+        const sql = `UPDATE '${tableName}' SET dishes = '${escapedDishesStr}' WHERE id = ${id}`;
+        
+        return await executeSQL(env, sql);
+    } catch (error) {
+        console.error('更新菜品失败:', error);
+        throw error;
+    }
 }
