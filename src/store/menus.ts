@@ -37,9 +37,11 @@ interface Dish {
     categoryName: string;
 }
 
+const defaultCategories = ["其他"];
+
 export async function createMenu(env: Env, id: number, menusInfo: MenusInfo): Promise<any> {
     const menusInfoStr = JSON.stringify(menusInfo);
-    const categoriesStr = JSON.stringify([]); // 新菜单的空 categories
+    const categoriesStr = JSON.stringify(defaultCategories); // 新菜单的空 categories
     const dishesStr = JSON.stringify([]);     // 新菜单的空 dishes
 
     // 重要提示: 请验证下面的表名 (当前为 'Menus') 是否与您的实际数据库表名匹配。
@@ -66,3 +68,8 @@ export async function createMenu(env: Env, id: number, menusInfo: MenusInfo): Pr
     return await executeSQL(env, sql);
 }
 
+export async function alterCategories(env: Env, id: number, categories: string[]): Promise<any> {
+    const categoriesStr = JSON.stringify(categories);
+    const sql = `UPDATE '${tableName}' SET categories = '${categoriesStr}' WHERE id = ${id}`;
+    return await executeSQL(env, sql);
+}
