@@ -56,6 +56,28 @@ async function getDishes(env: Env, id: number): Promise<Dish[]> {
     }
 }
 
+export async function getMenus(env: Env, id: number): Promise<Menu> {
+    try {
+        const sql = `SELECT menus_info, categories, dishes FROM '${tableName}' WHERE id = ${id}`;
+        const result = await executeSQL(env, sql);
+
+        if (!result || !result.results || result.results.length === 0) {
+            throw new Error(`菜单ID ${id} 不存在`);
+        }
+        
+        const row = result.results[0];
+        return {
+            id,
+            menusInfo: JSON.parse(row.menus_info) as MenusInfo,
+            categories: JSON.parse(row.categories) as Category[],
+            dishes: JSON.parse(row.dishes) as Dish[]
+        };
+    } catch (error) {
+        console.error('获取菜单失败:', error);
+        throw error;
+    }
+}
+
 export async function createMenu(env: Env, id: number, menusInfo: MenusInfo): Promise<any> {
     const menusInfoStr = JSON.stringify(menusInfo);
     const categoriesStr = JSON.stringify(defaultCategories); // 新菜单的空 categories
