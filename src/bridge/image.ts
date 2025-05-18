@@ -212,3 +212,28 @@ export async function uploadImageToStorage(env: Env, imageData: string): Promise
     throw error instanceof Error ? error : new Error('上传图片到R2存储时发生未知错误');
   }
 }
+
+export async function RemoveImage(env: Env, imagePath: string) {
+  if (!env.R2_Menus) {
+    throw new Error('R2存储桶配置缺失');
+  }
+
+  if (!imagePath) {
+    throw new Error('图片路径不能为空');
+  }
+
+  try {
+    // 检查图片是否存在
+    const objectMeta = await env.R2_Menus.head(imagePath);
+    if (!objectMeta) {
+      throw new Error(`图片不存在: ${imagePath}`);
+    }
+
+    // 删除图片
+    await env.R2_Menus.delete(imagePath);
+    console.log(`成功删除图片: ${imagePath}`);
+  } catch (error) {
+    console.error('删除图片失败:', error);
+    throw error instanceof Error ? error : new Error('删除图片时发生未知错误');
+  }
+}

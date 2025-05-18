@@ -1,4 +1,4 @@
-import { executeSQL } from '../bridge/d1';
+import { executeSQL } from './d1';
 // 确保 Env 类型已导入或全局可用。
 // 对于 Cloudflare Workers, Env 通常在全局的 `worker-configuration.d.ts` 文件中定义，
 // 或者从主 worker 文件 (例如 src/index.ts) 导出。
@@ -112,6 +112,31 @@ export async function addDish(env: Env, id: number, dish: Dish): Promise<any> {
         return await executeSQL(env, sql);
     } catch (error) {
         console.error('更新菜品失败:', error);
+        throw error;
+    }
+}
+
+export async function RemoveDishAndGetURL(env: Env, id: number, dishName: string): Promise<string> {
+    try {
+        // 1. 获取当前所有菜品
+        const currentDishes = await getDishes(env, id);
+
+        // 2. 移除菜品
+        const deleteDish = currentDishes.find(d => d.name === dishName);
+        if (!deleteDish) {
+            throw new Error(`菜品 ${dishName} 不存在`);
+        }
+        const updatedDishes = currentDishes.filter(d => d.name !== dishName);
+
+        // 3. 保存菜品
+        const dishesStr = JSON.stringify(updatedDishes);
+        const escapedDishesStr = dishesStr.replace(/'/g, "''");
+        const sql = `UPDATE '${tableName}' SET dishes = '${escapedDishesStr}' WHERE id = ${id}`;
+
+        await executeSQL(env, sql);
+        return deleteDish.image; // 返回删除的菜品的图片URL
+    } catch (error) {
+        console.error('移除菜品失败:', error);
         throw error;
     }
 }

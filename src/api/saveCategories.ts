@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { alterCategories } from '../store/menus';
+import { alterCategories } from '../bridge/menus';
 
 export async function SaveCategoriesAPI(c: Context): Promise<Response> {
     try {

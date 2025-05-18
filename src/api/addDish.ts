@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { addDish } from '../store/menus';
+import { addDish } from '../bridge/menus';
 import {uploadImageToStorage} from '../bridge/image'
 
 export async function AddDishAPI(c: Context): Promise<Response> {

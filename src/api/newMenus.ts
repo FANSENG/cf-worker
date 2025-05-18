@@ -1,5 +1,5 @@
 import { Context } from 'hono';
-import { createMenu } from '../store/menus';
+import { createMenu } from '../bridge/menus';
 import {uploadImageToStorage} from '../bridge/image'
 
 
