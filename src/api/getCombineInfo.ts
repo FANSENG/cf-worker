@@ -36,12 +36,12 @@ async function GetCombineInfoAPI(c: Context): Promise<Response> {
       image: menus.menusInfo.image,
     },
     categories: menus.categories,
-    dishes:menus.dishes
+    dishes: menus.dishes
   };
 
-  data.menu.image = await getPreSignedDownloadUrl(c.env,menus.menusInfo.image)
+  data.menu.image = await getPreSignedDownloadUrl(c.env, menus.menusInfo.image)
   for (const dish of data.dishes) {
-    dish.image = await getPreSignedDownloadUrl(c.env,dish.image);
+    dish.image = await getPreSignedDownloadUrl(c.env, dish.image);
   }
 
   return c.json(data);

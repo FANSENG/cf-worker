@@ -23,11 +23,11 @@ export interface Menu {
     dishes: Dish[];
 }
 
-export interface MenusInfo{
+export interface MenusInfo {
     name: string;
     image: string;
 }
-  
+
 export interface Category {
     name: string;
 }
@@ -43,11 +43,11 @@ async function getDishes(env: Env, id: number): Promise<Dish[]> {
     try {
         const sql = `SELECT dishes FROM '${tableName}' WHERE id = ${id}`;
         const result = await executeSQL(env, sql);
-        
+
         if (!result || !result.results || result.results.length === 0) {
             return [];
         }
-        
+
         const dishesStr = result.results[0].dishes;
         return JSON.parse(dishesStr) as Dish[];
     } catch (error) {
@@ -64,7 +64,7 @@ export async function getMenus(env: Env, id: number): Promise<Menu> {
         if (!result || !result.results || result.results.length === 0) {
             throw new Error(`菜单ID ${id} 不存在`);
         }
-        
+
         const row = result.results[0];
         return {
             id,
@@ -95,7 +95,7 @@ export async function createMenu(env: Env, id: number, menusInfo: MenusInfo): Pr
     // 然后在这里调用:
     // const sql = 'INSERT INTO Menus (id, menusInfo, categories, dishes) VALUES (?, ?, ?, ?)';
     // return await executeSQL(env, sql, [id, menusInfoStr, categoriesStr, dishesStr]);
-    
+
     // 当前的实现采用简单的单引号替换进行转义，这对于防止所有类型的SQL注入是不够的。
     // 请务必考虑上述关于参数化查询的建议以增强安全性。
     const escapedMenusInfoStr = menusInfoStr.replace(/'/g, "''");
@@ -117,7 +117,7 @@ export async function addDish(env: Env, id: number, dish: Dish): Promise<any> {
     try {
         // 1. 获取当前所有菜品
         const currentDishes = await getDishes(env, id);
-        
+
         // 2. 添加或更新菜品
         const existingIndex = currentDishes.findIndex(d => d.name === dish.name);
         if (existingIndex >= 0) {
@@ -125,12 +125,12 @@ export async function addDish(env: Env, id: number, dish: Dish): Promise<any> {
         } else {
             currentDishes.push(dish); // 添加新菜品
         }
-        
+
         // 3. 保存菜品
         const dishesStr = JSON.stringify(currentDishes);
         const escapedDishesStr = dishesStr.replace(/'/g, "''");
         const sql = `UPDATE '${tableName}' SET dishes = '${escapedDishesStr}' WHERE id = ${id}`;
-        
+
         return await executeSQL(env, sql);
     } catch (error) {
         console.error('更新菜品失败:', error);
