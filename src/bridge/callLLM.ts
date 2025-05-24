@@ -1,5 +1,4 @@
 import { OpenAI } from 'openai';
-import { Word2StoryRequest, Word2StoryResponse } from '../shared/word2story';
 
 async function CreateChat(
 	prompt: string,
